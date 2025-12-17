@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test DejaVu Font Loading</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <h1>Test DejaVu Font Loading</h1>
+    <button onclick="testFontLoading()">Test Font Loading</button>
+    <button onclick="generateTestPDF()">Generate Test PDF</button>
+    <div id="result"></div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+        
+        // Helper function to convert ArrayBuffer to base64
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary);
+        }
+
+        async function loadDejaVuFonts(doc) {
+            try {
+                // Load DejaVu Sans Condensed fonts (which we have)
+                const fontPaths = {
+                    'DejaVuSansCondensed-normal': '/fonts/dejavu-sans/DejaVuSansCondensed.ttf',
+                    'DejaVuSansCondensed-bold': '/fonts/dejavu-sans/DejaVuSansCondensed-Bold.ttf'
+                };
+                
+                for (const [fontKey, fontPath] of Object.entries(fontPaths)) {
+                    try {
+                        console.log(`Loading font: ${fontPath}`);
+                        const response = await fetch(fontPath);
+                        if (response.ok) {
+                            const fontArrayBuffer = await response.arrayBuffer();
+                            const fontBase64 = arrayBufferToBase64(fontArrayBuffer);
+                            
+                            // Add font to jsPDF
+                            const [fontName, fontStyle] = fontKey.split('-');
+                            doc.addFileToVFS(`${fontName}.ttf`, fontBase64);
+                            doc.addFont(`${fontName}.ttf`, fontName, fontStyle);
+                            
+                            console.log(`✅ Loaded font: ${fontKey}`);
+                            document.getElementById('result').innerHTML += `<p>✅ Loaded: ${fontKey}</p>`;
+                        } else {
+                            console.warn(`⚠️ Font not found: ${fontPath}`);
+                            document.getElementById('result').innerHTML += `<p>⚠️ Not found: ${fontPath}</p>`;
+                        }
+                    } catch (error) {
+                        console.warn(`⚠️ Error loading font ${fontKey}:`, error);
+                        document.getElementById('result').innerHTML += `<p>❌ Error loading: ${fontKey} - ${error.message}</p>`;
+                    }
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Error loading DejaVu fonts:', error);
+                document.getElementById('result').innerHTML += `<p>❌ General error: ${error.message}</p>`;
+                return false;
+            }
+        }
+
+        async function testFontLoading() {
+            document.getElementById('result').innerHTML = '<p>Testing font loading...</p>';
+            const doc = new jsPDF();
+            const loaded = await loadDejaVuFonts(doc);
+            
+            if (loaded) {
+                document.getElementById('result').innerHTML += '<p>✅ Font loading completed!</p>';
+            } else {
+                document.getElementById('result').innerHTML += '<p>❌ Font loading failed!</p>';
+            }
+        }
+
+        async function generateTestPDF() {
+            document.getElementById('result').innerHTML = '<p>Generating test PDF...</p>';
+            
+            const doc = new jsPDF();
+            const loaded = await loadDejaVuFonts(doc);
+            
+            // Test text
+            let yPos = 30;
+            
+            // Title with Helvetica
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.text('Font Test Document', 105, yPos, { align: 'center' });
+            yPos += 20;
+            
+            // Test with Helvetica
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.text('This text uses Helvetica (default font)', 20, yPos);
+            yPos += 10;
+            
+            if (loaded) {
+                // Test with DejaVu Sans Condensed
+                try {
+                    doc.setFont('DejaVuSansCondensed', 'normal');
+                    doc.text('This text uses DejaVu Sans Condensed Normal', 20, yPos);
+                    yPos += 10;
+                    
+                    doc.setFont('DejaVuSansCondensed', 'bold');
+                    doc.text('This text uses DejaVu Sans Condensed Bold', 20, yPos);
+                    yPos += 10;
+                    
+                    document.getElementById('result').innerHTML += '<p>✅ DejaVu fonts working in PDF!</p>';
+                } catch (error) {
+                    document.getElementById('result').innerHTML += `<p>❌ Error using DejaVu fonts: ${error.message}</p>`;
+                    doc.setFont('helvetica', 'normal');
+                    doc.text('DejaVu fonts failed, using Helvetica fallback', 20, yPos);
+                }
+            } else {
+                doc.text('DejaVu fonts not loaded, using Helvetica fallback', 20, yPos);
+            }
+            
+            // Test Indonesian characters
+            yPos += 20;
+            doc.setFont('helvetica', 'normal');
+            doc.text('Test Indonesian: Nama Lengkap Peserta Didik', 20, yPos);
+            yPos += 10;
+            
+            if (loaded) {
+                try {
+                    doc.setFont('DejaVuSansCondensed', 'normal');
+                    doc.text('DejaVu Test: Nama Lengkap Peserta Didik', 20, yPos);
+                } catch (error) {
+                    doc.setFont('helvetica', 'normal');
+                    doc.text('DejaVu failed for Indonesian text', 20, yPos);
+                }
+            }
+            
+            // Save PDF
+            doc.save('font_test.pdf');
+            document.getElementById('result').innerHTML += '<p>✅ Test PDF generated and downloaded!</p>';
+        }
+    </script>
+</body>
+</html>
