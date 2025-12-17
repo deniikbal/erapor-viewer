@@ -1,0 +1,62 @@
+===============================================
+BACKUP DATABASE E-RAPOR SMA
+===============================================
+
+Database Information:
+- Host: localhost
+- Port: 54945
+- Username: postgres
+- Password: (trust authentication - no password needed)
+- Database: db_neweraporsma
+- Total Tables: 53
+
+Backup Files Created (UPDATED - TANPA ERROR):
+
+RECOMMENDED FILES:
+1. backup_erapor_custom.backup (5.22 MB) ⭐ GUNAKAN INI
+   - Format custom PostgreSQL (compressed)
+   - Paling aman untuk PgAdmin restore
+   - Tanpa syntax error
+
+2. backup_erapor_clean.sql (67.1 MB)
+   - Pure SQL tanpa output command line
+   - Bisa dijalankan di Query Tool tanpa error
+
+3. backup_erapor_sample.sql (kecil)
+   - Sample tabel sekolah + user_login
+   - Untuk test restore
+
+OTHER FILES:
+4. backup_erapor_schema_clean.sql (0.14 MB)
+   - Hanya struktur tabel (bersih)
+
+5. backup_erapor_data_clean.sql (90.69 MB)
+   - Hanya data dengan INSERT statements
+
+6. backup_erapor_essential.sql (9.61 MB)
+   - Tabel penting saja
+
+Cara Restore di PgAdmin:
+1. Buka PgAdmin
+2. Create new database
+3. Right-click database → Restore
+4. Pilih file backup_erapor.backup
+5. Klik Restore
+
+Cara Restore via SQL:
+1. Buka Query Tool di PgAdmin
+2. Open file backup_erapor_full.sql
+3. Execute query
+
+Main Tables:
+- tabel_siswa: Data siswa
+- tabel_sekolah: Data sekolah
+- tabel_mapel: Mata pelajaran
+- tabel_ptk: Data guru/PTK
+- tabel_nilai_*: Berbagai jenis nilai
+- user_login: User aplikasi
+- tabel_pembelajaran: Data pembelajaran
+- tabel_kelas: Data kelas
+- tabel_kehadiran: Data absensi
+
+Created: 16 Desember 2025
