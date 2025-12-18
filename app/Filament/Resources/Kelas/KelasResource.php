@@ -9,6 +9,7 @@ use App\Filament\Resources\Kelas\Schemas\KelasForm;
 use App\Filament\Resources\Kelas\Tables\KelasTable;
 use App\Models\Kelas;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -18,6 +19,10 @@ use Illuminate\Database\Eloquent\Builder;
 class KelasResource extends Resource
 {
     protected static ?string $model = Kelas::class;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Data Referensi';
+
+    protected static ?string $navigationLabel = 'Data Kelas';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

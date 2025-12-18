@@ -1,307 +1,244 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Identitas Peserta Didik - {{ $siswa->nm_siswa }}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Identitas Siswa</title>
     <style>
         @page {
-            margin: 20mm;
-            size: A4;
+            margin: 20mm 20mm 20mm 20mm;
         }
-        
         body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 11pt;
-            line-height: 1.4;
-            color: #000;
+            line-height: 1.5;
         }
-        
         .header {
             text-align: center;
             font-weight: bold;
             font-size: 14pt;
-            margin-bottom: 15mm;
+            margin-bottom: 25px;
         }
-        
-        .content {
-            margin-left: 0;
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        
-        .row {
-            display: flex;
-            margin-bottom: 2mm;
-            align-items: flex-start;
+        td {
+            padding: 3px 2px;
+            vertical-align: top;
         }
-        
-        .no {
-            width: 8mm;
-            flex-shrink: 0;
+        .col-no {
+            width: 5%;
         }
-        
-        .label {
-            width: 60mm;
-            flex-shrink: 0;
+        .col-label {
+            width: 35%;
         }
-        
-        .colon {
-            width: 5mm;
-            flex-shrink: 0;
+        .col-colon {
+            width: 2%;
         }
-        
-        .value {
-            flex: 1;
-            word-wrap: break-word;
+        .col-value {
+            width: 58%;
         }
-        
-        .sub-item {
-            margin-left: 8mm;
+        .sub-label {
+            padding-left: 15px;
         }
-        
         .signature-section {
-            margin-top: 15mm;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            margin-top: 40px;
+            width: 100%;
+            position: relative;
+            height: 150px;
         }
-        
-        .photo-section {
-            width: 35mm;
-            text-align: center;
-        }
-        
-        .photo-placeholder {
-            width: 30mm;
-            height: 40mm;
+        .photo-box {
+            position: absolute;
+            left: 40px;
+            top: 0;
+            width: 3cm;
+            height: 4cm;
             border: 1px solid #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8pt;
-            color: #666;
-        }
-        
-        .signature {
             text-align: center;
-            width: 80mm;
+            line-height: 4cm;
+            font-size: 9pt;
         }
-        
-        .signature-name {
-            font-weight: bold;
-            text-decoration: underline;
-            margin-top: 20mm;
-            margin-bottom: 2mm;
-        }
-        
-        .capitalize {
-            text-transform: capitalize;
-        }
-        
-        .uppercase {
-            text-transform: uppercase;
+        .signature-box {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 300px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        IDENTITAS PESERTA DIDIK
-    </div>
-    
-    <div class="content">
-        <div class="row">
-            <div class="no">1.</div>
-            <div class="label">Nama Lengkap Peserta Didik</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->nm_siswa ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">2.</div>
-            <div class="label">Nomor Induk/NISN</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->nis ?? '' }} / {{ $siswa->nisn ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">3.</div>
-            <div class="label">Tempat, Tanggal Lahir</div>
-            <div class="colon">:</div>
-            <div class="value">
-                @if($siswa->tempat_lahir || $siswa->tanggal_lahir)
-                    {{ $siswa->tempat_lahir ?? '' }}@if($siswa->tempat_lahir && $siswa->tanggal_lahir), @endif
-                    @if($siswa->tanggal_lahir)
-                        {{ \Carbon\Carbon::parse($siswa->tanggal_lahir)->locale('id')->translatedFormat('d F Y') }}
-                    @endif
+    <div class="header">IDENTITAS PESERTA DIDIK</div>
+
+    <table>
+        <tr>
+            <td class="col-no">1.</td>
+            <td class="col-label">Nama Lengkap Peserta Didik</td>
+            <td class="col-colon">:</td>
+            <td class="col-value"><strong>{{ $siswa['full_name'] }}</strong></td>
+        </tr>
+        <tr>
+            <td class="col-no">2.</td>
+            <td class="col-label">Nomor Induk/NISN</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['nis'] }} / {{ $siswa['nisn'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">3.</td>
+            <td class="col-label">Tempat, Tanggal Lahir</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">
+                {{ $siswa['birth_place'] }}, 
+                @if($siswa['birth_date'])
+                    {{ \Carbon\Carbon::parse($siswa['birth_date'])->translatedFormat('d F Y') }}
                 @endif
-            </div>
-        </div>
-        
-        <div class="row">
-            <div class="no">4.</div>
-            <div class="label">Jenis Kelamin</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->jenis_kelamin == 'L' ? 'Laki-laki' : ($siswa->jenis_kelamin == 'P' ? 'Perempuan' : $siswa->jenis_kelamin) }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">5.</div>
-            <div class="label">Agama</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->agama ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">6.</div>
-            <div class="label">Status dalam Keluarga</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pelengkap->status_dalam_kel ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">7.</div>
-            <div class="label">Anak ke</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pelengkap->anak_ke ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">8.</div>
-            <div class="label">Alamat Peserta Didik</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->alamat_siswa ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">9.</div>
-            <div class="label">Nomor Telepon Rumah</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->telepon_siswa ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">10.</div>
-            <div class="label">Sekolah Asal</div>
-            <div class="colon">:</div>
-            <div class="value uppercase">{{ $siswa->pelengkap->sekolah_asal ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">11.</div>
-            <div class="label">Diterima di sekolah ini</div>
-            <div class="colon">:</div>
-            <div class="value"></div>
-        </div>
-        
-        <div class="row sub-item">
-            <div class="no"></div>
-            <div class="label">Di kelas</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pelengkap->diterima_kelas ?? 'X' }}</div>
-        </div>
-        
-        <div class="row sub-item">
-            <div class="no"></div>
-            <div class="label">Pada tanggal</div>
-            <div class="colon">:</div>
-            <div class="value">14 Juli 2025</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">12.</div>
-            <div class="label">Nama Orang Tua</div>
-            <div class="colon">:</div>
-            <div class="value"></div>
-        </div>
-        
-        <div class="row sub-item">
-            <div class="no"></div>
-            <div class="label">a. Ayah</div>
-            <div class="colon">:</div>
-            <div class="value capitalize">{{ $siswa->nm_ayah ?? '' }}</div>
-        </div>
-        
-        <div class="row sub-item">
-            <div class="no"></div>
-            <div class="label">b. Ibu</div>
-            <div class="colon">:</div>
-            <div class="value capitalize">{{ $siswa->nm_ibu ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">13.</div>
-            <div class="label">Alamat Orang Tua</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pelengkap->alamat_ortu ?? '' }}</div>
-        </div>
-        
-        <div class="row sub-item">
-            <div class="no"></div>
-            <div class="label">Nomor Telepon Rumah</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pelengkap->telepon_ortu ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">14.</div>
-            <div class="label">Pekerjaan Orang Tua :</div>
-            <div class="colon"></div>
-            <div class="value"></div>
-        </div>
-        
-        <div class="row sub-item">
-            <div class="no"></div>
-            <div class="label">a. Ayah</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pekerjaan_ayah ?? '' }}</div>
-        </div>
-        
-        <div class="row sub-item">
-            <div class="no"></div>
-            <div class="label">b. Ibu</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pekerjaan_ibu ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">15.</div>
-            <div class="label">Nama Wali Siswa</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->nm_wali ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">16.</div>
-            <div class="label">Alamat Wali Peserta Didik</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pelengkap->alamat_wali ?? '' }}</div>
-        </div>
-        
-        <div class="row sub-item">
-            <div class="no"></div>
-            <div class="label">Nomor Telepon Rumah</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pelengkap->telepon_wali ?? '' }}</div>
-        </div>
-        
-        <div class="row">
-            <div class="no">17.</div>
-            <div class="label">Pekerjaan Wali Peserta Didik</div>
-            <div class="colon">:</div>
-            <div class="value">{{ $siswa->pekerjaan_wali ?? '' }}</div>
-        </div>
-    </div>
-    
+            </td>
+        </tr>
+        <tr>
+            <td class="col-no">4.</td>
+            <td class="col-label">Jenis Kelamin</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['gender'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">5.</td>
+            <td class="col-label">Agama</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['religion'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">6.</td>
+            <td class="col-label">Status dalam Keluarga</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['family_status'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">7.</td>
+            <td class="col-label">Anak ke</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['child_number'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">8.</td>
+            <td class="col-label">Alamat Peserta Didik</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['address'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">9.</td>
+            <td class="col-label">Nomor Telepon Rumah</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['phone_number'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">10.</td>
+            <td class="col-label">Sekolah Asal</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ strtoupper($siswa['previous_school']) }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">11.</td>
+            <td class="col-label">Diterima di sekolah ini</td>
+            <td class="col-colon"></td>
+            <td class="col-value"></td>
+        </tr>
+        <tr>
+            <td class="col-no"></td>
+            <td class="col-label sub-label">Di kelas</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['accepted_class'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no"></td>
+            <td class="col-label sub-label">Pada tanggal</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">14 Juli 2025</td>
+        </tr>
+        <tr>
+            <td class="col-no">12.</td>
+            <td class="col-label">Nama Orang Tua</td>
+            <td class="col-colon"></td>
+            <td class="col-value"></td>
+        </tr>
+        <tr>
+            <td class="col-no"></td>
+            <td class="col-label sub-label">a. Ayah</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ ucwords(strtolower($siswa['father_name'])) }}</td>
+        </tr>
+        <tr>
+            <td class="col-no"></td>
+            <td class="col-label sub-label">b. Ibu</td>
+            <td class="colon">:</td>
+            <td class="col-value">{{ ucwords(strtolower($siswa['mother_name'])) }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">13.</td>
+            <td class="col-label">Alamat Orang Tua</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['parent_address'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no"></td>
+            <td class="col-label sub-label">Nomor Telepon Rumah</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['parent_phone'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">14.</td>
+            <td class="col-label">Pekerjaan Orang Tua</td>
+            <td class="col-colon"></td>
+            <td class="col-value"></td>
+        </tr>
+        <tr>
+            <td class="col-no"></td>
+            <td class="col-label sub-label">a. Ayah</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['father_job'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no"></td>
+            <td class="col-label sub-label">b. Ibu</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['mother_job'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">15.</td>
+            <td class="col-label">Nama Wali Siswa</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['guardian_name'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">16.</td>
+            <td class="col-label">Alamat Wali Peserta Didik</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['guardian_address'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no"></td>
+            <td class="col-label sub-label">Nomor Telepon Rumah</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['guardian_phone'] }}</td>
+        </tr>
+        <tr>
+            <td class="col-no">17.</td>
+            <td class="col-label">Pekerjaan Wali Peserta Didik</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $siswa['guardian_job'] }}</td>
+        </tr>
+    </table>
+
     <div class="signature-section">
-        <div class="photo-section">
-            <div class="photo-placeholder">
-                Foto 3x4
-            </div>
+        <div class="photo-box">
+            Foto 3x4
         </div>
         
-        <div class="signature">
-            <div>Bantarujeg, 14 Juli 2025</div>
-            <div>Kepala Sekolah</div>
-            <div class="signature-name">{{ $kepala_sekolah['nama'] }}</div>
-            <div>NIP. {{ $kepala_sekolah['nip'] }}</div>
+        <div class="signature-box">
+            Bantarujeg, 14 Juli 2025<br>
+            Kepala Sekolah<br>
+            <br><br><br><br>
+            <strong><u>{{ $kepala_sekolah['nama'] }}</u></strong><br>
+            NIP. {{ $kepala_sekolah['nip'] }}
         </div>
     </div>
 </body>

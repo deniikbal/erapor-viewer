@@ -14,30 +14,40 @@ class PtksTable
     {
         return $table
             ->columns([
-                TextColumn::make('ptk_id'),
                 TextColumn::make('nama')
-                    ->searchable(),
-                TextColumn::make('nip')
-                    ->searchable(),
-                TextColumn::make('jenis_ptk_id')
-                    ->numeric()
+                    ->label('Nama PTK')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('jenis_kelamin')
-                    ->searchable(),
-                TextColumn::make('tempat_lahir')
-                    ->searchable(),
-                TextColumn::make('tanggal_lahir')
-                    ->date()
+                TextColumn::make('nip')
+                    ->label('NIP')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('nuptk')
-                    ->searchable(),
-                TextColumn::make('alamat_jalan')
-                    ->searchable(),
-                TextColumn::make('status_keaktifan_id')
-                    ->numeric()
+                    ->label('NUPTK')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('soft_delete')
-                    ->numeric()
+                TextColumn::make('jenis_kelamin')
+                    ->label('Jenis Kelamin')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'L' => 'info',
+                        'P' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'L' => 'Laki-laki',
+                        'P' => 'Perempuan',
+                        default => $state,
+                    })
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('jenis_ptk_id')
+                    ->label('Jenis PTK')
+                    ->formatStateUsing(fn ($state) => match ((int) $state) {
+                        91 => 'Kepala Sekolah',
+                        92 => 'Guru',
+                        default => $state,
+                    })
                     ->sortable(),
             ])
             ->filters([
@@ -50,6 +60,7 @@ class PtksTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('nama', 'asc');
     }
 }
