@@ -41,8 +41,7 @@ class GuruPdfController extends Controller
         $kelasInfo = $kelas ? $kelas->kelas : null;
 
         // Get Logo & TTD Data
-        $sekolahId = $user->sekolah_id; 
-        $logoData = LogoTtdKepsek::where('sekolah_id', $sekolahId)->first();
+        $logoData = LogoTtdKepsek::first();
 
         return [
             'siswa' => [
@@ -101,9 +100,24 @@ class GuruPdfController extends Controller
         return $pdf->download($filename);
     }
     
+    public function streamPdf($siswaId)
+    {
+        $data = $this->fetchSiswaData($siswaId);
+        
+        $pdf = Pdf::loadView('pdf.identitas-siswa', $data);
+        $pdf->setPaper('a4', 'portrait');
+        
+        return $pdf->stream('Identitas_' . str_replace(' ', '_', $data['siswa']['full_name']) . '.pdf');
+    }
+    
     public function showPdfPage($siswaId = null)
     {
         return view('pdf.generator', ['siswaId' => $siswaId]);
+    }
+    
+    public function showPdfPreview($siswaId = null)
+    {
+        return view('pdf.generator', ['siswaId' => $siswaId, 'previewMode' => true]);
     }
     
     public function getAllSiswaData()
@@ -130,8 +144,7 @@ class GuruPdfController extends Controller
             ->first();
 
         // Get Logo Data
-        $sekolahId = $user->sekolah_id;
-        $logoData = LogoTtdKepsek::where('sekolah_id', $sekolahId)->first();
+        $logoData = LogoTtdKepsek::first();
         $logos = $logoData ? [
             'logo_pemda' => $logoData->logo_pemda ? '/storage/' . $logoData->logo_pemda : null,
             'logo_sekolah' => $logoData->logo_sek ? '/storage/' . $logoData->logo_sek : null,

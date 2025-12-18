@@ -107,6 +107,13 @@ class SiswasTable
                     ->color('danger')
                     ->url(fn ($record) => route('guru.siswa.pdf', $record->peserta_didik_id))
                     ->openUrlInNewTab(),
+                    
+                Action::make('pdf_preview')
+                    ->label('Preview PDF')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->url(fn ($record) => route('guru.siswa.pdf.preview', $record->peserta_didik_id))
+                    ->openUrlInNewTab(),
             ])
             ->toolbarActions([
                 Action::make('pdf_all')

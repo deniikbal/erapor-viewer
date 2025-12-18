@@ -61,31 +61,55 @@
 </head>
 <body>
     <div class="container">
-        <h2>Generate PDF Identitas Siswa</h2>
-        <p>Klik tombol di bawah untuk mengunduh PDF identitas siswa</p>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Sedang membuat PDF...</p>
-        </div>
-        
-        @if($siswaId)
-            <button class="btn btn-danger" onclick="generateSinglePDF()">
-                📄 Download PDF Siswa
-            </button>
+        @if(isset($previewMode) && $previewMode)
+            <h2>Preview PDF Identitas Siswa</h2>
+            <p>PDF akan ditampilkan di bawah ini</p>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Sedang membuat PDF...</p>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <button class="btn btn-danger" onclick="downloadCurrentPDF()">
+                    📄 Download PDF
+                </button>
+                <a href="{{ url()->previous() }}" class="btn">← Kembali</a>
+            </div>
+            
+            <!-- PDF Preview Container -->
+            <div id="pdfPreview" style="border: 1px solid #ddd; margin-top: 20px; min-height: 400px; background: white;">
+                <!-- PDF akan ditampilkan di sini -->
+            </div>
         @else
-            <button class="btn btn-danger" onclick="generateAllPDF()">
-                📄 Download PDF Semua Siswa
-            </button>
+            <h2>Generate PDF Identitas Siswa</h2>
+            <p>Klik tombol di bawah untuk mengunduh PDF identitas siswa</p>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Sedang membuat PDF...</p>
+            </div>
+            
+            @if($siswaId)
+                <button class="btn btn-danger" onclick="generateSinglePDF()">
+                    📄 Download PDF Siswa
+                </button>
+            @else
+                <button class="btn btn-danger" onclick="generateAllPDF()">
+                    📄 Download PDF Semua Siswa
+                </button>
+            @endif
+            
+            <br><br>
+            <a href="{{ url()->previous() }}" class="btn">← Kembali</a>
         @endif
-        
-        <br><br>
-        <a href="{{ url()->previous() }}" class="btn">← Kembali</a>
     </div>
 
     <script>
         const { jsPDF } = window.jspdf;
         const siswaId = @json($siswaId);
+        const previewMode = @json($previewMode ?? false);
+        let currentPdfDoc = null;
         
         // Helper functions
         function capitalizeWords(str) {
@@ -185,33 +209,33 @@
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
             const xCenter = pageWidth / 2;
-            let yPos = 30;
+            let yPos = 25;
 
             // 1. Logo Pemda (Top)
             if (logos && logos.logo_pemda) {
                 const logoData = await getBase64Image(logos.logo_pemda);
                 if (logoData) {
-                    const w = 35; 
-                    const h = 40; 
+                    const w = 45; 
+                    const h = 50; 
                     doc.addImage(logoData, 'PNG', xCenter - (w/2), yPos, w, h);
-                    yPos += 50; 
+                    yPos += 65; 
                 } else { yPos += 40; }
             } else { yPos += 40; }
 
             // 2. School Title
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(16);
+            doc.setFontSize(20);
             doc.text('SEKOLAH MENENGAH ATAS', xCenter, yPos, { align: 'center' });
             yPos += 8;
             doc.text('( SMA )', xCenter, yPos, { align: 'center' });
-            yPos += 30;
+            yPos += 20;
 
             // 3. Logo Sekolah (Middle)
             if (logos && logos.logo_sekolah) {
                 const logoData = await getBase64Image(logos.logo_sekolah);
                 if (logoData) {
                     const w = 45; 
-                    const h = 45; 
+                    const h = 50; 
                     doc.addImage(logoData, 'PNG', xCenter - (w/2), yPos, w, h);
                     yPos += 55; 
                 } else { yPos += 55; }
@@ -220,39 +244,213 @@
             yPos += 15;
 
             // 4. Student Name
-            doc.setFontSize(12);
+            doc.setFontSize(18);
             doc.setFont('helvetica', 'bold');
             doc.text('Nama Peserta Didik', xCenter, yPos, { align: 'center' });
-            yPos += 5;
+            yPos += 3;
             
             // Name Box
-            const boxWidth = 140;
-            const boxHeight = 12;
+            const boxWidth = 130;
+            const boxHeight = 10;
             const xBox = xCenter - (boxWidth / 2);
             doc.rect(xBox, yPos, boxWidth, boxHeight);
-            doc.setFontSize(14);
+            doc.setFontSize(18);
             doc.text(student.full_name ? student.full_name.toUpperCase() : '', xCenter, yPos + 8, { align: 'center' });
             
-            yPos += 30;
+            yPos += 25;
 
             // 5. NISN / NIS
-            doc.setFontSize(12);
+            doc.setFontSize(18);
             doc.text('NISN / NIS', xCenter, yPos, { align: 'center' });
-            yPos += 5;
+            yPos += 3;
             
             // NISN Box
             doc.rect(xBox, yPos, boxWidth, boxHeight);
-            doc.setFontSize(14);
+            doc.setFontSize(18);
             const nisnNis = `${student.nisn || ''} / ${student.nis || ''}`;
             doc.text(nisnNis, xCenter, yPos + 8, { align: 'center' });
 
             // 6. Footer
-            const yFooter = pageHeight - 40;
-            doc.setFontSize(14);
+            const yFooter = pageHeight - 45;
+            doc.setFontSize(18);
             doc.text('KEMENTERIAN PENDIDIKAN DASAR DAN MENENGAH', xCenter, yFooter, { align: 'center' });
             doc.text('REPUBLIK INDONESIA', xCenter, yFooter + 8, { align: 'center' });
         }
         
+        async function generateKeteranganPindahPage(doc, student) {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const xCenter = pageWidth / 2;
+            let yPos = 25;
+
+            // Title
+            await setDejaVuFont(doc, 'bold');
+            doc.setFontSize(14);
+            doc.text('KETERANGAN PINDAH SEKOLAH', xCenter, yPos, { align: 'center' });
+            yPos += 15;
+
+            // Student name with dots
+            await setDejaVuFont(doc, 'normal');
+            doc.setFontSize(11);
+            doc.text('Nama Peserta Didik  :', 20, yPos);
+            
+            // Draw dots for filling
+            const dotsStart = 60;
+            const dotsEnd = pageWidth - 80;
+            const dotSpacing = 1;
+            for (let x = dotsStart; x < dotsEnd; x += dotSpacing) {
+                doc.text('.', x, yPos);
+            }
+            yPos += 7;
+
+            // Table structure
+            const tableStartX = 20;
+            const tableStartY = yPos;
+            const colWidths = [22, 38, 55, 65]; // Column widths - total 180, safe for A4
+            const tableWidth = colWidths.reduce((sum, width) => sum + width, 0); // Calculate actual table width
+            const rowHeight = 25; // Height for sub-header row
+            const dataRowHeight = 65; // Height for data rows (baris 3, 4, 5)
+            const headerRowHeight = 8; // 8mm ≈ 23 points
+            
+            // Table headers
+            await setDejaVuFont(doc, 'bold');
+            doc.setFontSize(9);
+            
+            // Draw table border (header + sub-header + 3 data rows)
+            const totalTableHeight = headerRowHeight + rowHeight + (dataRowHeight * 3);
+            doc.rect(tableStartX, tableStartY, tableWidth, totalTableHeight);
+            
+            // First row: Merged "KELUAR" header (8mm height)
+            doc.setFontSize(11);
+            doc.text('KELUAR', tableStartX + (tableWidth / 2), tableStartY + (headerRowHeight / 2) + 2, { align: 'center' });
+            
+            // Draw horizontal line after merged header
+            doc.line(tableStartX, tableStartY + headerRowHeight, tableStartX + tableWidth, tableStartY + headerRowHeight);
+            
+            // Second row: Sub-headers
+            let currentX = tableStartX;
+            let currentY = tableStartY + headerRowHeight; // Start from second row
+            
+            // Draw vertical lines and headers
+            const headers = [
+                'Tanggal',
+                'Kelas yang ditinggalkan',
+                'Sebab-sebab Keluar atau Atas Permintaan (Tertulis)',
+                'Tanda Tangan Kepala Sekolah, dan Tanda Tangan Orang Tua/Wali'
+            ];
+            
+            // Draw header cells
+            doc.line(currentX, currentY, currentX, currentY + rowHeight); // Left border
+            doc.text('Tanggal', currentX + (colWidths[0] / 2), currentY + (rowHeight / 2) + 2, { 
+                align: 'center', 
+                maxWidth: colWidths[0] - 4 
+            });
+            currentX += colWidths[0];
+            
+            doc.line(currentX, currentY, currentX, currentY + rowHeight);
+            const headerText1 = doc.splitTextToSize('Kelas yang ditinggalkan', colWidths[1] - 4);
+            const text1Height = headerText1.length * 4;
+            const text1StartY = currentY + (rowHeight / 2) - (text1Height / 2) + 2;
+            doc.text(headerText1, currentX + (colWidths[1] / 2), text1StartY, { align: 'center' });
+            currentX += colWidths[1];
+            
+            doc.line(currentX, currentY, currentX, currentY + rowHeight);
+            const headerText2 = doc.splitTextToSize('Sebab-sebab Keluar atau Atas Permintaan (Tertulis)', colWidths[2] - 4);
+            const text2Height = headerText2.length * 4;
+            const text2StartY = currentY + (rowHeight / 2) - (text2Height / 2) + 2;
+            doc.text(headerText2, currentX + (colWidths[2] / 2), text2StartY, { align: 'center' });
+            currentX += colWidths[2];
+            
+            doc.line(currentX, currentY, currentX, currentY + rowHeight);
+            const headerText3 = doc.splitTextToSize('Tanda Tangan Kepala Sekolah, Stempel Sekolah, dan Tanda Tangan Orang Tua/Wali', colWidths[3] - 4);
+            const text3Height = headerText3.length * 4;
+            const text3StartY = currentY + (rowHeight / 2) - (text3Height / 2) + 2;
+            doc.text(headerText3, currentX + (colWidths[3] / 2), text3StartY, { align: 'center' });
+            currentX += colWidths[3];
+            
+            doc.line(currentX, currentY, currentX, currentY + rowHeight); // Right border
+            
+            // Draw horizontal line after header
+            doc.line(tableStartX, currentY + rowHeight, tableStartX + tableWidth, currentY + rowHeight);
+            
+            // Draw 3 empty rows for data
+            await setDejaVuFont(doc, 'normal');
+            for (let i = 1; i <= 3; i++) {
+                // Move to next row position (use dataRowHeight for data rows)
+                currentY += (i === 1) ? rowHeight : dataRowHeight;
+                currentX = tableStartX;
+                
+                // Draw vertical lines for each column
+                for (let j = 0; j < colWidths.length; j++) {
+                    doc.line(currentX, currentY, currentX, currentY + dataRowHeight);
+                    
+                    // Add signature labels in the last column
+                    if (j === colWidths.length - 1) {
+                        doc.setFontSize(8);
+                        doc.text('Kepala Sekolah,', currentX + 2, currentY + 15);
+                        doc.text('NIP:', currentX + 2, currentY + 35);
+                        doc.text('Orang Tua/Wali,', currentX + 2, currentY + 45);
+                        
+                        // Draw separator lines (adjusted for taller rows)
+                        doc.line(currentX + 2, currentY + 40, currentX + colWidths[j] - 2, currentY + 40);
+                        doc.line(currentX + 2, currentY + 60, currentX + colWidths[j] - 2, currentY + 60);
+                    }
+                    
+                    currentX += colWidths[j];
+                }
+                
+                // Draw right border
+                doc.line(currentX, currentY, currentX, currentY + dataRowHeight);
+                
+                // Draw horizontal line after each row
+                doc.line(tableStartX, currentY + dataRowHeight, tableStartX + tableWidth, currentY + dataRowHeight);
+            }
+        }
+
+        async function generateSchoolInfoPage(doc) {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const xCenter = pageWidth / 2;
+            let yPos = 25;
+
+            // Title
+            await setDejaVuFont(doc, 'bold');
+            doc.setFontSize(16);
+            doc.text('SEKOLAH MENENGAH ATAS', xCenter, yPos, { align: 'center' });
+            yPos += 8;
+            doc.text('( SMA )', xCenter, yPos, { align: 'center' });
+            yPos += 15;
+
+            // School information table
+            await setDejaVuFont(doc, 'normal');
+            doc.setFontSize(13);
+            
+            const leftCol = 31;
+            const colonCol = 70;
+            const rightCol = 75;
+            const lineHeight = 10;
+
+            const schoolData = [
+                ['Nama Sekolah', 'SMAN 1 BANTARUJEG'],
+                ['NPSN', '20213887'],
+                ['NIS/NSS/NDS', '301021016'],
+                ['Alamat Sekolah', 'Jl. Siliwangi No. 119 Bantarujeg'],
+                ['Kelurahan / Desa', 'Bantarujeg'],
+                ['Kecamatan', 'Kec. Bantarujeg'],
+                ['Kota/Kabupaten', 'Kab. Majalengka'],
+                ['Provinsi', 'Prov. Jawa Barat'],
+                ['Website', 'http://sman1bantarujeg.sch.id'],
+                ['E-mail', 'sman1btrg@gmail.com']
+            ];
+
+            schoolData.forEach(([label, value]) => {
+                doc.text(label, leftCol, yPos);
+                doc.text(':', colonCol, yPos);
+                doc.text(value, rightCol, yPos);
+                yPos += lineHeight;
+            });
+        }
+
         async function generatePDFIdentitas(student, logos) {
             const doc = new jsPDF();
             
@@ -260,11 +458,15 @@
             await generateCoverPage(doc, student, logos);
             doc.addPage();
             
+            // --- School Info Page ---
+            await generateSchoolInfoPage(doc);
+            doc.addPage();
+            
             // --- Identity Page ---
             const pageWidth = doc.internal.pageSize.getWidth();
             const marginLeft = 20;
             const margin = marginLeft;
-            let yPos = 20; 
+            let yPos = 23; 
 
             // Load Pass Photo for Identity Page
             let photoBase64 = '';
@@ -387,9 +589,23 @@
             yPos += 5;
             doc.setFontSize(10);
             doc.text('NIP. 19730302 199802 1 002', signatureX, yPos);
+            
+            // Add new page for Keterangan Pindah Sekolah
+            doc.addPage();
+            await generateKeteranganPindahPage(doc, student);
 
             const fileName = `Identitas_${student.full_name?.replace(/\s+/g, '_') || 'Siswa'}.pdf`;
-            doc.save(fileName);
+            
+            if (previewMode) {
+                // Preview mode: tampilkan di browser
+                currentPdfDoc = doc;
+                const pdfDataUri = doc.output('datauristring');
+                const previewContainer = document.getElementById('pdfPreview');
+                previewContainer.innerHTML = `<iframe src="${pdfDataUri}" width="100%" height="800px" style="border: none;"></iframe>`;
+            } else {
+                // Download mode
+                doc.save(fileName);
+            }
         }
         
         async function generateSinglePDF() {
@@ -403,11 +619,14 @@
                 if (data.error) { alert(data.error); return; }
                 
                 await generatePDFIdentitas(data.siswa, data.logos);
-                alert('PDF berhasil diunduh');
+                if (!previewMode) {
+                    alert('PDF berhasil diunduh');
+                }
                 
             } catch (error) {
                 console.error('Error:', error);
-                alert('Terjadi kesalahan saat membuat PDF');
+                console.error('Error stack:', error.stack);
+                alert('Terjadi kesalahan saat membuat PDF: ' + error.message);
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
@@ -432,8 +651,18 @@
                     await generateCoverPage(doc, data.siswaList[i], data.logos);
                     doc.addPage();
                     
+                    // School Info (only for first student)
+                    if (i === 0) {
+                        await generateSchoolInfoPage(doc);
+                        doc.addPage();
+                    }
+                    
                     // Identity
                     await generateStudentPage(doc, data.siswaList[i], i + 1, '', data.logos);
+                    
+                    // Keterangan Pindah
+                    doc.addPage();
+                    await generateKeteranganPindahPage(doc, data.siswaList[i]);
                 }
                 
                 const fileName = `Identitas_Semua_Siswa.pdf`;
@@ -518,8 +747,23 @@
              doc.text('NIP. 19730302 199802 1 002', signatureX, yPos);
         }
 
+        function downloadCurrentPDF() {
+            if (currentPdfDoc) {
+                const fileName = `Identitas_PDF.pdf`;
+                currentPdfDoc.save(fileName);
+            } else {
+                alert('PDF belum dibuat. Silakan tunggu sebentar.');
+            }
+        }
+
         if (siswaId) {
-            window.addEventListener('load', () => { setTimeout(generateSinglePDF, 1000); });
+            if (previewMode) {
+                // Preview mode: generate PDF dan tampilkan
+                window.addEventListener('load', () => { setTimeout(generateSinglePDF, 1000); });
+            } else {
+                // Download mode: auto download
+                window.addEventListener('load', () => { setTimeout(generateSinglePDF, 1000); });
+            }
         }
     </script>
 </body>

@@ -18,4 +18,8 @@ Route::middleware(['auth'])->prefix('guru')->group(function () {
     // API endpoints for PDF data
     Route::get('/siswa/{siswa}/data', [GuruPdfController::class, 'getSiswaData'])->name('guru.siswa.data');
     Route::get('/siswa/data/all', [GuruPdfController::class, 'getAllSiswaData'])->name('guru.siswa.data.all');
+    
+    // PDF Stream endpoints (for development/testing)
+    Route::get('/siswa/{siswa}/pdf/stream', [GuruPdfController::class, 'streamPdf'])->name('guru.siswa.pdf.stream');
+    Route::get('/siswa/{siswa}/pdf/preview', [GuruPdfController::class, 'showPdfPreview'])->name('guru.siswa.pdf.preview');
 });

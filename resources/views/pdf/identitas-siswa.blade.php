@@ -68,7 +68,36 @@
     </style>
 </head>
 <body>
-    <div class="header">IDENTITAS PESERTA DIDIK</div>
+    <!-- Header with logos -->
+    <div style="text-align: center; margin-bottom: 30px;">
+        <table style="width: 100%; border: none;">
+            <tr>
+                <td style="width: 20%; text-align: center; vertical-align: middle;">
+                    @if(isset($logos['logo_pemda']) && $logos['logo_pemda'])
+                        <img src="{{ public_path('storage/' . ltrim($logos['logo_pemda'], '/storage/')) }}" 
+                             style="width: 60px; height: auto; max-height: 80px;" alt="Logo Pemda">
+                    @endif
+                </td>
+                <td style="width: 60%; text-align: center; vertical-align: middle;">
+                    <div style="font-weight: bold; font-size: 16pt; line-height: 1.2;">
+                        SEKOLAH MENENGAH ATAS hhhh<br>
+                        NEGERI 1 BANTARUJEG<br>
+                        <span style="font-size: 12pt;">Jl. Siliwangi No. 119 Bantarujeg</span>
+                    </div>
+                </td>
+                <td style="width: 20%; text-align: center; vertical-align: middle;">
+                    @if(isset($logos['logo_sekolah']) && $logos['logo_sekolah'])
+                        <img src="{{ public_path('storage/' . ltrim($logos['logo_sekolah'], '/storage/')) }}" 
+                             style="width: 60px; height: auto; max-height: 80px;" alt="Logo Sekolah">
+                    @endif
+                </td>
+            </tr>
+        </table>
+        <hr style="border: 1px solid #000; margin: 15px 0;">
+        <div style="font-weight: bold; font-size: 14pt; margin-top: 15px;">
+            IDENTITAS PESERTA DIDIK
+        </div>
+    </div>
 
     <table>
         <tr>
