@@ -87,13 +87,9 @@ class SiswaForm
                             ->label('Anak Ke-')
                             ->numeric(),
                         TextInput::make('sekolah_asal')
-                            ->label('Sekolah Asal')
-                            ->columnSpanFull(),
+                            ->label('Sekolah Asal'),
                         TextInput::make('diterima_kelas')
                             ->label('Diterima di Kelas'),
-                        DatePicker::make('tgl_lulus')
-                            ->label('Tanggal Lulus')
-                            ->displayFormat('d/m/Y'),
                         Textarea::make('alamat_ortu')
                             ->label('Alamat Orang Tua')
                             ->rows(3)
@@ -101,19 +97,13 @@ class SiswaForm
                         TextInput::make('telepon_ortu')
                             ->label('Telepon Orang Tua')
                             ->tel(),
-                        Textarea::make('alamat_wali')
-                            ->label('Alamat Wali')
-                            ->rows(3),
                         TextInput::make('telepon_wali')
                             ->label('Telepon Wali')
                             ->tel(),
-                        TextInput::make('no_ijasahnas')
-                            ->label('No. Ijazah Nasional'),
-                        TextInput::make('no_transkrip')
-                            ->label('No. Transkrip'),
-                        TextInput::make('foto_siswa')
-                            ->label('Foto Siswa (Path)')
-                            ->columnSpanFull(),
+                        Textarea::make('alamat_wali')
+                            ->label('Alamat Wali')
+                            ->rows(3),
+                        
                     ]),
             ]);
     }

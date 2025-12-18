@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Siswa;
-use App\Models\Kelas;
+use App\Models\LogoTtdKepsek;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class GuruPdfController extends Controller
 {
     public function getSiswaData($siswaId)
+    {
+        return response()->json($this->fetchSiswaData($siswaId));
+    }
+
+    private function fetchSiswaData($siswaId)
     {
         $user = Auth::user();
         
@@ -32,9 +39,12 @@ class GuruPdfController extends Controller
             ->first();
         
         $kelasInfo = $kelas ? $kelas->kelas : null;
-        
-        // Format data for JavaScript PDF generation
-        $data = [
+
+        // Get Logo & TTD Data
+        $sekolahId = $user->sekolah_id; 
+        $logoData = LogoTtdKepsek::where('sekolah_id', $sekolahId)->first();
+
+        return [
             'siswa' => [
                 'id' => $siswa->peserta_didik_id,
                 'full_name' => $siswa->nm_siswa,
@@ -69,10 +79,31 @@ class GuruPdfController extends Controller
             'kepala_sekolah' => [
                 'nama' => 'Dr. H. Toto Warsito, S.Ag., M.Ag.',
                 'nip' => '19730302 199802 1 002'
-            ]
+            ],
+            'logos' => $logoData ? [
+                'logo_pemda' => $logoData->logo_pemda ? '/storage/' . $logoData->logo_pemda : null,
+                'logo_sekolah' => $logoData->logo_sek ? '/storage/' . $logoData->logo_sek : null,
+                'ttd_kepsek' => $logoData->ttd_kepsek ? '/storage/' . $logoData->ttd_kepsek : null,
+                'kop_sekolah' => $logoData->kop_sekolah ? '/storage/' . $logoData->kop_sekolah : null,
+            ] : null
         ];
+    }
+    
+    public function downloadPdf($siswaId)
+    {
+        $data = $this->fetchSiswaData($siswaId);
         
-        return response()->json($data);
+        $pdf = Pdf::loadView('pdf.identitas-siswa', $data);
+        $pdf->setPaper('a4', 'portrait');
+        
+        $filename = 'Identitas_' . str_replace(' ', '_', $data['siswa']['full_name']) . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+    
+    public function showPdfPage($siswaId = null)
+    {
+        return view('pdf.generator', ['siswaId' => $siswaId]);
     }
     
     public function getAllSiswaData()
@@ -80,6 +111,7 @@ class GuruPdfController extends Controller
         $user = Auth::user();
         
         // Get all siswa from guru's class
+        // ... (query same as original) ...
         $siswaList = Siswa::with(['pelengkap', 'anggotaKelas.kelas'])
             ->whereHas('anggotaKelas.kelas', function ($query) use ($user) {
                 $query->where('ptk_id', $user->ptk_id)
@@ -96,6 +128,16 @@ class GuruPdfController extends Controller
         $kelas = Kelas::where('ptk_id', $user->ptk_id)
             ->where('jenis_rombel', 1)
             ->first();
+
+        // Get Logo Data
+        $sekolahId = $user->sekolah_id;
+        $logoData = LogoTtdKepsek::where('sekolah_id', $sekolahId)->first();
+        $logos = $logoData ? [
+            'logo_pemda' => $logoData->logo_pemda ? '/storage/' . $logoData->logo_pemda : null,
+            'logo_sekolah' => $logoData->logo_sek ? '/storage/' . $logoData->logo_sek : null,
+            'ttd_kepsek' => $logoData->ttd_kepsek ? '/storage/' . $logoData->ttd_kepsek : null,
+            'kop_sekolah' => $logoData->kop_sekolah ? '/storage/' . $logoData->kop_sekolah : null,
+        ] : null;
         
         // Format data for JavaScript PDF generation
         $data = [
@@ -135,14 +177,10 @@ class GuruPdfController extends Controller
             'kepala_sekolah' => [
                 'nama' => 'Dr. H. Toto Warsito, S.Ag., M.Ag.',
                 'nip' => '19730302 199802 1 002'
-            ]
+            ],
+            'logos' => $logos
         ];
         
         return response()->json($data);
-    }
-    
-    public function showPdfPage($siswaId = null)
-    {
-        return view('pdf.generator', ['siswaId' => $siswaId]);
     }
 }
