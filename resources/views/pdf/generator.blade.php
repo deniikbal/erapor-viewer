@@ -306,7 +306,7 @@
             // Table structure
             const tableStartX = 20;
             const tableStartY = yPos;
-            const colWidths = [22, 38, 55, 65]; // Column widths - total 180, safe for A4
+            const colWidths = [25, 30, 50, 65]; // Column widths - total 180, safe for A4
             const tableWidth = colWidths.reduce((sum, width) => sum + width, 0); // Calculate actual table width
             const rowHeight = 25; // Height for sub-header row
             const dataRowHeight = 65; // Height for data rows (baris 3, 4, 5)
@@ -386,14 +386,38 @@
                     
                     // Add signature labels in the last column
                     if (j === colWidths.length - 1) {
-                        doc.setFontSize(8);
-                        doc.text('Kepala Sekolah,', currentX + 2, currentY + 15);
-                        doc.text('NIP:', currentX + 2, currentY + 35);
-                        doc.text('Orang Tua/Wali,', currentX + 2, currentY + 45);
+                        doc.setFontSize(10);
                         
-                        // Draw separator lines (adjusted for taller rows)
-                        doc.line(currentX + 2, currentY + 40, currentX + colWidths[j] - 2, currentY + 40);
-                        doc.line(currentX + 2, currentY + 60, currentX + colWidths[j] - 2, currentY + 60);
+                        // Dots above "Kepala Sekolah"
+                        const dotsY1 = currentY + 8;
+                        const dotSpacing = 1; // Jarak antar titik (semakin kecil = semakin rapat)
+                        const dotStartX = currentX + 5; // Mulai dari mana
+                        const dotEndX = currentX + colWidths[j] - 5; // Sampai mana
+                        for (let x = dotStartX; x < dotEndX; x += dotSpacing) {
+                            doc.text('.', x, dotsY1);
+                        }
+                        
+                        doc.text('Kepala Sekolah,', currentX + 5, currentY + 12);
+                        
+                        // Dots above "NIP" with underline
+                        const dotsY2 = currentY + 30;
+                        for (let x = dotStartX; x < dotEndX; x += dotSpacing) {
+                            doc.text('.', x, dotsY2);
+                        }
+                        // Underline for NIP dots
+                        doc.line(dotStartX, dotsY2 + 1, dotEndX, dotsY2 + 1);
+                        
+                        doc.text('NIP:', currentX + 5, currentY + 35);
+                        doc.text('Orang Tua/Wali,', currentX + 5, currentY + 39);
+                        
+                        
+                        // Dots below "Orang Tua/Wali" with underline
+                        const dotsY4 = currentY + 60;
+                        for (let x = dotStartX; x < dotEndX; x += dotSpacing) {
+                            doc.text('.', x, dotsY4);
+                        }
+                        // Underline for Orang Tua/Wali dots
+                        doc.line(dotStartX, dotsY4 + 1, dotEndX, dotsY4 + 1);
                     }
                     
                     currentX += colWidths[j];
