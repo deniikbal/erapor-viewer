@@ -10,22 +10,36 @@ class Mapel extends Model
     use HasFactory;
 
     protected $table = 'tabel_mapel';
-    protected $primaryKey = 'id_mapel';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    protected $primaryKey = 'mata_pelajaran_id';
+    public $incrementing = true;
+    protected $keyType = 'int';
     public $timestamps = false;
 
     protected $fillable = [
-        'id_mapel',
-        'nama_mapel',
-        'kelompok_mapel',
-        'urutan_mapel',
-        'status_mapel'
+        'mata_pelajaran_id',
+        'nm_mapel',
+        'kelompok',
+        'semester',
+        'jurusan_id',
+        'urut_rapor',
+        'nm_lokal',
+        'nm_ringkas'
     ];
 
     // Relationships
     public function pembelajaran()
     {
-        return $this->hasMany(Pembelajaran::class, 'id_mapel', 'id_mapel');
+        return $this->hasMany(Pembelajaran::class, 'mata_pelajaran_id', 'mata_pelajaran_id');
+    }
+
+    public function nilaiAkhir()
+    {
+        return $this->hasMany(NilaiAkhir::class, 'mata_pelajaran_id', 'mata_pelajaran_id');
+    }
+
+    // Accessor for compatibility
+    public function getNamaMapelAttribute()
+    {
+        return $this->nm_mapel;
     }
 }

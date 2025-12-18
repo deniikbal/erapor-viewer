@@ -30,6 +30,6 @@ class AnggotaKelas extends Model
 
     public function siswa()
     {
-        return $this->belongsTo(Siswa::class, 'peserta_didik_id', 'peserta_didik_id');
+        return $this->belongsTo(Siswa::class, 'peserta_didik_id', 'id_siswa');
     }
 }

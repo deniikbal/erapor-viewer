@@ -102,7 +102,7 @@ class UserLogin extends Authenticatable
     // Relationships
     public function ptk()
     {
-        return $this->belongsTo(Ptk::class, 'ptk_id', 'id_ptk');
+        return $this->belongsTo(Ptk::class, 'ptk_id', 'ptk_id');
     }
 
     // Check if user is admin
