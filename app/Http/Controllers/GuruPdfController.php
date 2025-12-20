@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Siswa;
 use App\Models\LogoTtdKepsek;
+use App\Models\Sekolah;
+use App\Models\TanggalRapor;
+use App\Models\Semester;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,6 +45,15 @@ class GuruPdfController extends Controller
 
         // Get Logo & TTD Data
         $logoData = LogoTtdKepsek::first();
+        
+        // Get School Data
+        $sekolah = Sekolah::first();
+        
+        // Get TanggalRapor Data
+        $tanggalRapor = TanggalRapor::first();
+        
+        // Get Semester Data
+        $semester = Semester::where('periode_aktif', 1)->first();
 
         return [
             'siswa' => [
@@ -70,15 +82,36 @@ class GuruPdfController extends Controller
                 'parent_phone' => $siswa->pelengkap->telepon_ortu ?? null,
                 'guardian_address' => $siswa->pelengkap->alamat_wali ?? null,
                 'guardian_phone' => $siswa->pelengkap->telepon_wali ?? null,
+                'diterima_tanggal' => $siswa->diterima_tanggal ? $siswa->diterima_tanggal->format('Y-m-d') : null,
             ],
             'kelas' => $kelasInfo ? [
                 'nama' => $kelasInfo->nm_kelas,
                 'wali_kelas' => $kelasInfo->waliKelas->nama ?? null
             ] : null,
-            'kepala_sekolah' => [
-                'nama' => 'Dr. H. Toto Warsito, S.Ag., M.Ag.',
-                'nip' => '19730302 199802 1 002'
-            ],
+            'sekolah' => $sekolah ? [
+                'nama' => $sekolah->nama,
+                'npsn' => $sekolah->npsn,
+                'nss' => $sekolah->nss,
+                'alamat' => $sekolah->alamat,
+                'kelurahan' => $sekolah->kelurahan,
+                'kecamatan' => $sekolah->kecamatan,
+                'kab_kota' => $sekolah->kab_kota,
+                'propinsi' => $sekolah->propinsi,
+                'website' => $sekolah->website,
+                'email' => $sekolah->email,
+                'nm_kepsek' => $sekolah->nm_kepsek,
+                'nip_kepsek' => $sekolah->nip_kepsek
+            ] : null,
+            'tanggal_rapor' => $tanggalRapor ? [
+                'tempat_ttd' => $tanggalRapor->tempat_ttd,
+                'tanggal' => $tanggalRapor->tanggal ? $tanggalRapor->tanggal->format('Y-m-d') : null
+            ] : null,
+            'semester' => $semester ? [
+                'semester_id' => $semester->semester_id,
+                'nama_semester' => $semester->nama_semester,
+                'semester' => $semester->semester,
+                'tahun_ajaran_id' => $semester->tahun_ajaran_id
+            ] : null,
             'logos' => $logoData ? [
                 'logo_pemda' => $logoData->logo_pemda ? '/storage/' . $logoData->logo_pemda : null,
                 'logo_sekolah' => $logoData->logo_sek ? '/storage/' . $logoData->logo_sek : null,
@@ -120,6 +153,16 @@ class GuruPdfController extends Controller
         return view('pdf.generator', ['siswaId' => $siswaId, 'previewMode' => true]);
     }
     
+    public function showLaporanHasilBelajar($siswaId = null)
+    {
+        return view('pdf.laporan-hasil-belajar', ['siswaId' => $siswaId]);
+    }
+    
+    public function showLaporanHasilBelajarPreview($siswaId = null)
+    {
+        return view('pdf.laporan-hasil-belajar', ['siswaId' => $siswaId, 'previewMode' => true]);
+    }
+    
     public function getAllSiswaData()
     {
         $user = Auth::user();
@@ -145,6 +188,16 @@ class GuruPdfController extends Controller
 
         // Get Logo Data
         $logoData = LogoTtdKepsek::first();
+        
+        // Get School Data
+        $sekolah = Sekolah::first();
+        
+        // Get TanggalRapor Data
+        $tanggalRapor = TanggalRapor::first();
+        
+        // Get Semester Data
+        $semester = Semester::where('periode_aktif', 1)->first();
+        
         $logos = $logoData ? [
             'logo_pemda' => $logoData->logo_pemda ? '/storage/' . $logoData->logo_pemda : null,
             'logo_sekolah' => $logoData->logo_sek ? '/storage/' . $logoData->logo_sek : null,
@@ -181,16 +234,37 @@ class GuruPdfController extends Controller
                     'parent_phone' => $siswa->pelengkap->telepon_ortu ?? null,
                     'guardian_address' => $siswa->pelengkap->alamat_wali ?? null,
                     'guardian_phone' => $siswa->pelengkap->telepon_wali ?? null,
+                    'diterima_tanggal' => $siswa->diterima_tanggal ? $siswa->diterima_tanggal->format('Y-m-d') : null,
                 ];
             }),
             'kelas' => $kelas ? [
                 'nama' => $kelas->nm_kelas,
                 'wali_kelas' => $kelas->waliKelas->nama ?? null
             ] : null,
-            'kepala_sekolah' => [
-                'nama' => 'Dr. H. Toto Warsito, S.Ag., M.Ag.',
-                'nip' => '19730302 199802 1 002'
-            ],
+            'sekolah' => $sekolah ? [
+                'nama' => $sekolah->nama,
+                'npsn' => $sekolah->npsn,
+                'nss' => $sekolah->nss,
+                'alamat' => $sekolah->alamat,
+                'kelurahan' => $sekolah->kelurahan,
+                'kecamatan' => $sekolah->kecamatan,
+                'kab_kota' => $sekolah->kab_kota,
+                'propinsi' => $sekolah->propinsi,
+                'website' => $sekolah->website,
+                'email' => $sekolah->email,
+                'nm_kepsek' => $sekolah->nm_kepsek,
+                'nip_kepsek' => $sekolah->nip_kepsek
+            ] : null,
+            'tanggal_rapor' => $tanggalRapor ? [
+                'tempat_ttd' => $tanggalRapor->tempat_ttd,
+                'tanggal' => $tanggalRapor->tanggal ? $tanggalRapor->tanggal->format('Y-m-d') : null
+            ] : null,
+            'semester' => $semester ? [
+                'semester_id' => $semester->semester_id,
+                'nama_semester' => $semester->nama_semester,
+                'semester' => $semester->semester,
+                'tahun_ajaran_id' => $semester->tahun_ajaran_id
+            ] : null,
             'logos' => $logos
         ];
         

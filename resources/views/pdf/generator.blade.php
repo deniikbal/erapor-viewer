@@ -277,6 +277,7 @@
             doc.text('REPUBLIK INDONESIA', xCenter, yFooter + 8, { align: 'center' });
         }
         
+        // Halaman KELUAR (Original)
         async function generateKeteranganPindahPage(doc, student) {
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
@@ -431,7 +432,157 @@
             }
         }
 
-        async function generateSchoolInfoPage(doc) {
+        // Halaman MASUK (New)
+        async function generateKeteranganMasukPage(doc, student) {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const xCenter = pageWidth / 2;
+            let yPos = 25;
+
+            // Title
+            await setDejaVuFont(doc, 'bold');
+            doc.setFontSize(14);
+            doc.text('KETERANGAN PINDAH SEKOLAH', xCenter, yPos, { align: 'center' });
+            yPos += 15;
+
+            // Student name with dots
+            await setDejaVuFont(doc, 'normal');
+            doc.setFontSize(11);
+            doc.text('Nama Peserta Didik  :', 20, yPos);
+            
+            // Draw dots for filling
+            const dotsStart = 60;
+            const dotsEnd = pageWidth - 80;
+            const dotSpacing = 1;
+            for (let x = dotsStart; x < dotsEnd; x += dotSpacing) {
+                doc.text('.', x, yPos);
+            }
+            yPos += 7;
+
+            // Main table structure
+            const tableStartX = 20;
+            const tableStartY = yPos;
+            const tableWidth = pageWidth - 40; // Full width minus margins
+            const colWidths = [15, 50, 50, 55]; // NO, column 1, column 2, column 3
+            const headerRowHeight = 8;
+            const dataRowHeight = 65;
+            
+            // Draw main table border
+            const totalTableHeight = headerRowHeight + (dataRowHeight * 3);
+            doc.rect(tableStartX, tableStartY, tableWidth, totalTableHeight);
+            
+            // Header row
+            await setDejaVuFont(doc, 'bold');
+            doc.setFontSize(12);
+            
+            let currentX = tableStartX;
+            let currentY = tableStartY;
+            
+            // Draw header cells and text
+            // NO column
+            doc.line(currentX, currentY, currentX, currentY + headerRowHeight);
+            doc.text('NO', currentX + (colWidths[0] / 2), currentY + (headerRowHeight / 2) + 2, { align: 'center' });
+            currentX += colWidths[0];
+            
+            // MASUK column (spans 3 columns)
+            doc.line(currentX, currentY, currentX, currentY + headerRowHeight);
+            const masukWidth = colWidths[1] + colWidths[2] + colWidths[3];
+            doc.text('MASUK', currentX + (masukWidth / 2), currentY + (headerRowHeight / 2) + 2, { align: 'center' });
+            currentX += masukWidth;
+            
+            // Right border
+            doc.line(currentX, currentY, currentX, currentY + headerRowHeight);
+            
+            // Draw horizontal line after header
+            doc.line(tableStartX, currentY + headerRowHeight, tableStartX + tableWidth, currentY + headerRowHeight);
+            
+            // Data rows
+            await setDejaVuFont(doc, 'normal');
+            doc.setFontSize(10);
+            
+            for (let rowNum = 1; rowNum <= 3; rowNum++) {
+                currentY += (rowNum === 1) ? headerRowHeight : dataRowHeight;
+                currentX = tableStartX;
+                
+                // Column NO: Numbers aligned with items
+                doc.line(currentX, currentY, currentX, currentY + dataRowHeight);
+                const itemNumbers = ['1.', '2.', '3.', '4.', '', '', '5.']; // Empty for sub-items a, b
+                let numberY = currentY + 8;
+                itemNumbers.forEach(number => {
+                    if (number) {
+                        doc.text(number, currentX + (colWidths[0] / 2), numberY, { align: 'center' });
+                    }
+                    numberY += 8;
+                });
+                currentX += colWidths[0];
+                
+                // Column 1: Student info
+                doc.line(currentX, currentY, currentX, currentY + dataRowHeight);
+                const col1Items = [
+                    'Nama Siswa',
+                    'Nomor Induk', 
+                    'Nama Sekolah',
+                    'Masuk di Sekolah ini:',
+                    '   a. Tanggal',
+                    '   b. Di Kelas',
+                    'Tahun Ajaran'
+                ];
+                
+                let itemY = currentY + 8;
+                col1Items.forEach(item => {
+                    doc.text(item, currentX + 2, itemY);
+                    itemY += 8;
+                });
+                currentX += colWidths[1];
+                
+                // Column 2: Lines for filling (selective lines)
+                doc.line(currentX, currentY, currentX, currentY + dataRowHeight);
+                let lineY = currentY + 8;
+                const showLine = [true, true, true, false, true, true, true]; // Item 1,2,3,5,6,7 have lines, item 4 doesn't
+                
+                for (let i = 0; i < 7; i++) {
+                    if (showLine[i]) {
+                        const lineStart = currentX + 5;
+                        const lineEnd = currentX + colWidths[2] - 5;
+                        doc.line(lineStart, lineY + 3, lineEnd, lineY + 3);
+                    }
+                    lineY += 8;
+                }
+                currentX += colWidths[2];
+                
+                // Column 3: Signature area
+                doc.line(currentX, currentY, currentX, currentY + dataRowHeight);
+                
+                // Dots for signature
+                const sigDotsY1 = currentY + 8;
+                const sigDotsStart = currentX + 5;
+                const sigDotsEnd = currentX + colWidths[3] - 5;
+                for (let x = sigDotsStart; x < sigDotsEnd; x += 1) {
+                    doc.text('.', x, sigDotsY1);
+                }
+                
+                doc.text('Kepala Sekolah,', currentX + 5, currentY + 15);
+                
+                // More dots for NIP
+                const sigDotsY2 = currentY + 50;
+                for (let x = sigDotsStart; x < sigDotsEnd; x += 1) {
+                    doc.text('.', x, sigDotsY2);
+                }
+                doc.line(sigDotsStart, sigDotsY2 + 1, sigDotsEnd, sigDotsY2 + 1);
+                
+                doc.text('NIP.', currentX + 5, currentY + 55);
+                
+                currentX += colWidths[3];
+                
+                // Right border
+                doc.line(currentX, currentY, currentX, currentY + dataRowHeight);
+                
+                // Bottom border for this row
+                doc.line(tableStartX, currentY + dataRowHeight, tableStartX + tableWidth, currentY + dataRowHeight);
+            }
+        }
+
+        async function generateSchoolInfoPage(doc, sekolahData) {
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
             const xCenter = pageWidth / 2;
@@ -454,7 +605,20 @@
             const rightCol = 75;
             const lineHeight = 10;
 
-            const schoolData = [
+            // Use dynamic school data from database
+            const schoolData = sekolahData ? [
+                ['Nama Sekolah', sekolahData.nama || ''],
+                ['NPSN', sekolahData.npsn || ''],
+                ['NIS/NSS/NDS', sekolahData.nss || ''],
+                ['Alamat Sekolah', sekolahData.alamat || ''],
+                ['Kelurahan / Desa', sekolahData.kelurahan || ''],
+                ['Kecamatan', sekolahData.kecamatan || ''],
+                ['Kota/Kabupaten', sekolahData.kab_kota || ''],
+                ['Provinsi', sekolahData.propinsi || ''],
+                ['Website', sekolahData.website || ''],
+                ['E-mail', sekolahData.email || '']
+            ] : [
+                // Fallback data if no school data available
                 ['Nama Sekolah', 'SMAN 1 BANTARUJEG'],
                 ['NPSN', '20213887'],
                 ['NIS/NSS/NDS', '301021016'],
@@ -475,7 +639,7 @@
             });
         }
 
-        async function generatePDFIdentitas(student, logos) {
+        async function generatePDFIdentitas(student, logos, sekolahData, tanggalRaporData) {
             const doc = new jsPDF();
             
             // --- Cover Page ---
@@ -483,7 +647,7 @@
             doc.addPage();
             
             // --- School Info Page ---
-            await generateSchoolInfoPage(doc);
+            await generateSchoolInfoPage(doc, sekolahData);
             doc.addPage();
             
             // --- Identity Page ---
@@ -557,7 +721,13 @@
             
             addRow('11.', 'Diterima di sekolah ini', '');
             addRow('', 'Di kelas', student.accepted_class || 'X');
-            addRow('', 'Pada tanggal', '14 Juli 2025');
+            
+            // Format tanggal diterima
+            let tanggalDiterima = '14 Juli 2025'; // fallback
+            if (student.diterima_tanggal) {
+                tanggalDiterima = formatDate(student.diterima_tanggal);
+            }
+            addRow('', 'Pada tanggal', tanggalDiterima);
             
             addRow('12.', 'Nama Orang Tua', '');
             addRow('', 'a. Ayah', capitalizeWords(student.father_name), true);
@@ -593,14 +763,21 @@
             yPos = signatureStartY + 4;
             await setDejaVuFont(doc, 'normal');
             doc.setFontSize(11);
-            doc.text('Bantarujeg, 14 Juli 2025', signatureX, yPos);
+            
+            // Format tempat dan tanggal tanda tangan
+            let tempatTtd = tanggalRaporData?.tempat_ttd || 'Bantarujeg';
+            let tanggalTtd = '14 Juli 2025'; // fallback
+            if (student.diterima_tanggal) {
+                tanggalTtd = formatDate(student.diterima_tanggal);
+            }
+            doc.text(`${tempatTtd}, ${tanggalTtd}`, signatureX, yPos);
             yPos += 5;
             doc.text('Kepala Sekolah', signatureX, yPos);
             
             yPos += 24;
             await setDejaVuFont(doc, 'bold');
             doc.setFontSize(10);
-            const namaKepala = 'Dr. H. Toto Warsito, S.Ag., M.Ag.';
+            const namaKepala = sekolahData?.nm_kepsek || 'Dr. H. Toto Warsito, S.Ag., M.Ag.';
             doc.text(namaKepala, signatureX, yPos);
             
             try {
@@ -612,11 +789,16 @@
             
             yPos += 5;
             doc.setFontSize(10);
-            doc.text('NIP. 19730302 199802 1 002', signatureX, yPos);
+            const nipKepala = sekolahData?.nip_kepsek || '19730302 199802 1 002';
+            doc.text(`NIP. ${nipKepala}`, signatureX, yPos);
             
-            // Add new page for Keterangan Pindah Sekolah
+            // Add new page for Keterangan Pindah Sekolah (KELUAR)
             doc.addPage();
             await generateKeteranganPindahPage(doc, student);
+            
+            // Add new page for Keterangan Pindah Sekolah (MASUK)
+            doc.addPage();
+            await generateKeteranganMasukPage(doc, student);
 
             const fileName = `Identitas_${student.full_name?.replace(/\s+/g, '_') || 'Siswa'}.pdf`;
             
@@ -642,7 +824,7 @@
                 
                 if (data.error) { alert(data.error); return; }
                 
-                await generatePDFIdentitas(data.siswa, data.logos);
+                await generatePDFIdentitas(data.siswa, data.logos, data.sekolah, data.tanggal_rapor);
                 if (!previewMode) {
                     alert('PDF berhasil diunduh');
                 }
@@ -677,16 +859,20 @@
                     
                     // School Info (only for first student)
                     if (i === 0) {
-                        await generateSchoolInfoPage(doc);
+                        await generateSchoolInfoPage(doc, data.sekolah);
                         doc.addPage();
                     }
                     
                     // Identity
-                    await generateStudentPage(doc, data.siswaList[i], i + 1, '', data.logos);
+                    await generateStudentPage(doc, data.siswaList[i], i + 1, '', data.logos, data.sekolah, data.tanggal_rapor);
                     
-                    // Keterangan Pindah
+                    // Keterangan Pindah (KELUAR)
                     doc.addPage();
                     await generateKeteranganPindahPage(doc, data.siswaList[i]);
+                    
+                    // Keterangan Pindah (MASUK)
+                    doc.addPage();
+                    await generateKeteranganMasukPage(doc, data.siswaList[i]);
                 }
                 
                 const fileName = `Identitas_Semua_Siswa.pdf`;
@@ -701,7 +887,7 @@
             }
         }
         
-        async function generateStudentPage(doc, student, pageNumber, photoBase64, logos) {
+        async function generateStudentPage(doc, student, pageNumber, photoBase64, logos, sekolahData, tanggalRaporData) {
             // Re-implement the identity page logic for the loop
             // For brevity, reuse logic from generatePDFIdentitas but adapting to doc context
             // This needs to be consistent with generatePDFIdentitas
@@ -761,12 +947,19 @@
              if (finalPhoto) doc.addImage(finalPhoto, 'JPEG', margin + 47, yPos, 30, 40);
              
              yPos += 4;
-             doc.text('Bantarujeg, 14 Juli 2025', signatureX, yPos);
+             // Format tempat dan tanggal tanda tangan
+             let tempatTtd = tanggalRaporData?.tempat_ttd || 'Bantarujeg';
+             let tanggalTtd = '14 Juli 2025'; // fallback
+             if (student.diterima_tanggal) {
+                 tanggalTtd = formatDate(student.diterima_tanggal);
+             }
+             doc.text(`${tempatTtd}, ${tanggalTtd}`, signatureX, yPos);
              yPos += 5;
              doc.text('Kepala Sekolah', signatureX, yPos);
              yPos += 24;
              doc.setFont('helvetica', 'bold');
-             doc.text('Dr. H. Toto Warsito, S.Ag., M.Ag.', signatureX, yPos);
+             const namaKepala = sekolahData?.nm_kepsek || 'Dr. H. Toto Warsito, S.Ag., M.Ag.';
+             doc.text(namaKepala, signatureX, yPos);
              yPos += 5;
              doc.text('NIP. 19730302 199802 1 002', signatureX, yPos);
         }

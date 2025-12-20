@@ -22,4 +22,11 @@ Route::middleware(['auth'])->prefix('guru')->group(function () {
     // PDF Stream endpoints (for development/testing)
     Route::get('/siswa/{siswa}/pdf/stream', [GuruPdfController::class, 'streamPdf'])->name('guru.siswa.pdf.stream');
     Route::get('/siswa/{siswa}/pdf/preview', [GuruPdfController::class, 'showPdfPreview'])->name('guru.siswa.pdf.preview');
+    
+    // Laporan Hasil Belajar Routes
+    Route::get('/siswa/{siswa}/laporan-hasil-belajar', [GuruPdfController::class, 'showLaporanHasilBelajar'])->name('guru.siswa.laporan-hasil-belajar');
+    Route::get('/siswa/laporan-hasil-belajar/all', function() {
+        return app(GuruPdfController::class)->showLaporanHasilBelajar();
+    })->name('guru.siswa.laporan-hasil-belajar.all');
+    Route::get('/siswa/{siswa}/laporan-hasil-belajar/preview', [GuruPdfController::class, 'showLaporanHasilBelajarPreview'])->name('guru.siswa.laporan-hasil-belajar.preview');
 });
